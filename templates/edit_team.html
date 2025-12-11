@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Edit {{ data.name }}</h1>
+    <form method="POST">
+        <label for="name">Team Name:</label><br>
+        <input type="text" id="name" name="name" value=" {{ data.name }} "><br><br>
+
+        <label for="score">Score:</label><br>
+        <input type="number" id="score" name="score" value={{ data.score }}><br><br>
+        
+        <button type="submit" class="button-sub">Update</button>
+    </form>
+{% endblock %}

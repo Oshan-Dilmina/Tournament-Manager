@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>✏️ Update Tournament: {{ tournament.name }}</h1>
+    <form method="POST">
+        <label for="name">Tournament Name:</label><br>
+        <input type="text" id="name" name="name" value="{{ tournament.name }}" required><br><br>
+
+        <label for="status">Status:</label><br>
+        <input type="text" id="status" name="status" value="{{ tournament.status }}" required><br><br>
+        
+        <label>Type:</label><br>
+        <input type="text" value="{{ tournament.type.capitalize() }}" disabled><br><br>
+        
+        <button type="submit" class="button-sub">Save Changes</button>
+    </form>
+    <p><a href="{{ url_for('index') }}">Cancel and go back</a></p>
+{% endblock %}

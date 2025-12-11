@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Add Team to: {{ tournament.name }}</h1>
+    <form method="POST">
+        <label for="name">Team Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="score">Initial Score:</label><br>
+        <input type="number" id="score" name="score" value="0"><br><br>
+        
+        <button type="submit" class="button-sub">Add Team</button>
+    </form>
+{% endblock %}

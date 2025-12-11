@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Teams: {{ tourn_name }}</h1>
+    
+    {% if info %}
+        <table border="1" cellpadding="10" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in info %}
+                <tr>
+                    <td>{{ t.name }} - {{t.id}}</td>
+                    <td>{{ t.score }}</td>
+                    <td>
+                    <form method="post" action="{{ url_for('del_team', tourn_id=tourn_id , team_id=t.id) }}" style="display:inline;">
+                        <button class="button-dng">Delete</button>
+                    </form>
+                    </td>
+                    <td>
+                    <a href=" {{ url_for('edit_team',tourn_id=tourn_id , team_id=t.id) }} "><button class="button">Edit</button></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No teams or players registered yet.</p>
+    {% endif %}
+    
+{% endblock %}

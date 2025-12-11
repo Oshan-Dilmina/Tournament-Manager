@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Create New Tournament</h1>
+    <form method="POST" action="{{ url_for('new_tourn_route') }}">
+        <label for="name">Tournament Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="status">Status:</label><br>
+        <input type="text" id="status" name="status" value="Open" required><br><br>
+        
+        <label for="type">Type:</label><br>
+        <select id="type" name="type" required>
+            <option value="solo">Solo</option>
+            <option value="teamed">Teamed</option>
+        </select><br><br>
+        
+        <button type="submit" class="button-sub">Create Tournament</button>
+    </form>
+{% endblock %}

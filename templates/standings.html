@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>📋 Standings: {{ tourn_name }}</h1>
+    
+    {% if standings %}
+        <table border="1" cellpadding="10" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Score</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in standings %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ s.name }} - {{s.id}}</td>
+                    <td>{{ s.type }}</td>
+                    <td>{{ s.score }}</td>
+                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No teams or players registered yet.</p>
+    {% endif %}
+    
+{% endblock %}
