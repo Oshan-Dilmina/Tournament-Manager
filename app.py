@@ -1,10 +1,13 @@
 # app.py
 from flask import Flask, render_template, request, redirect, url_for, flash
 import db_manager # Import the separated database logic
+import os
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
-# Used for session messages (like success/error flashes)
-app.secret_key = 'your_super_secret_key' 
+load_dotenv()
+app.secret_key = os.envion.get('FLASK_SECRET_KEY') 
 
 # --- FLASK ROUTES ---
 
