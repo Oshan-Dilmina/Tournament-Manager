@@ -316,7 +316,7 @@ def submit_score(tourn_id, current_round):
     tourn = db_manager.get_tournament_by_id(tourn_id)
     col_name = 'players' if tourn['type'] == 'solo' else 'teams'
     part_ref = db_manager.tref.document(tourn_id).collection(col_name)
-    
+    active_ref = db_manager.tref.document(tourn_id).collection('rounds').document(current_round)
     processed_ids = []
 
     for key in request.form:
@@ -329,7 +329,7 @@ def submit_score(tourn_id, current_round):
             p2_id = request.form.get(f'opp_{p1_id}')
             s1 = int(request.form.get(f'score_{p1_id}', 0))
 
-            # Case A: Normal Match
+
             if p2_id != "BYE":
                 s2 = int(request.form.get(f'score_{p2_id}', 0))
                 
@@ -337,7 +337,6 @@ def submit_score(tourn_id, current_round):
                 m1 = s1 - s2
                 m2 = s2 - s1
 
-                # Update Player 1
                 part_ref.document(p1_id).update({
                     "score": db_manager.firestore.Increment(m1)
                 })
@@ -347,9 +346,7 @@ def submit_score(tourn_id, current_round):
                 })
                 processed_ids.append(p2_id)
 
-            # Case B: BYE (The player gets a flat margin bonus)
             else:
-                # You can use the value from the input or a tournament default
                 bye_margin = s1 
                 part_ref.document(p1_id).update({
                     "score": db_manager.firestore.Increment(bye_margin)
@@ -358,6 +355,7 @@ def submit_score(tourn_id, current_round):
             processed_ids.append(p1_id)
 
     flash(f"Round {current_round} margins applied.")
+    active_ref.update({'isactive':False})
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
