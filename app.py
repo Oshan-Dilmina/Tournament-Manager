@@ -284,20 +284,23 @@ def standings_route(tourn_id):
 @app.route('/tournament/<tourn_id>/pair')
 def pairing(tourn_id):
     current_round = db_manager.get_tournament_current_round(tourn_id) + 1
-    defualt_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
-
+    default_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
     rounds = db_manager.get_round_info(tourn_id)
-    for round in rounds:
-        if round['ongoing'] == True:
-            current_pairings = rounds[0]
-            pairings = current_pairings['pairs']
-            bye_pair = current_pairings['bye_pair']
-            round_count = current_pairings['round_number']
+    
+    pairings = None
+    bye_pair = None
+    round_count = current_round
+    active_round = next((r for r in rounds if r.get('isactive') is True), None)
+
+    if active_round:
+        pairings = active_round['pairs']
+        bye_pair = active_round.get('bye_pair')
+        round_count = active_round['round_number']
+    else:
+        if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
+            pairings, bye_pair = pair.SoloPair(tourn_id, current_round).pair()
         else:
-            if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
-                pairings, bye_pair = pair.SoloPair(tourn_id,current_round).pair()
-            else:
-                pairings, bye_pair = pair.TeamPair(tourn_id,current_round).pair()
+            pairings, bye_pair = pair.TeamPair(tourn_id, current_round).pair()
 
     return render_template('pairings.html', 
                         pairings=pairings,
@@ -305,8 +308,8 @@ def pairing(tourn_id):
                         tourn_id=tourn_id, 
                         t_type = db_manager.get_tournament_by_id(tourn_id)['type'],
                         tourn_name = db_manager.get_tournament_by_id(tourn_id)['name'],
-                        round_count = current_round,
-                        defualt_bye = defualt_bye)
+                        round_count = round_count,
+                        defualt_bye = default_bye)
 
 @app.route('/tournament/<tourn_id>/pair/<current_round>/submit', methods=['POST'])
 def submit_score(tourn_id, current_round):
