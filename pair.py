@@ -129,8 +129,9 @@ class SoloPair:
             self.tourn_id,
             {"round_count": self.current_round}
         )
+        
+        db_manager.save_pairings(self.tourn_id,self.current_round,pairings,bye_pair,True)
 
-        return pairings,bye_pair
 
 
 class TeamPair:
@@ -213,7 +214,8 @@ class TeamPair:
                 "t2": "BYE",
                 "table": None
             }
-
+        else:
+            bye_pair = None
         
         while unpaired:
             t1 = unpaired.pop(0)
@@ -257,7 +259,8 @@ class TeamPair:
       
         db_manager.update_tournament(
             self.tourn_id,
-            {"round_count": self.current_round}
+            {"current_round": self.current_round}
         )
+        db_manager.save_pairings(self.tourn_id,self.current_round,pairings,bye_pair,True)
 
         return pairings,bye_pair

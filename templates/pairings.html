@@ -2,63 +2,75 @@
 {% block content %}
 
 <div class="container">
-    <h2>Swiss Pairings - Round {{ round_count }}</h2>
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Table</th>
-                <th>Participant 1 (Score)</th>
-                <th>vs</th>
-                <th>Participant 2 (Score)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for match in pairings %}
-            <tr>
-                <td>{{ match.table }}</td>
+    <h2>{{ tourn_name }} - Round {{ round_count }}</h2>
+    <form action="{{ url_for('submit_score', tourn_id=tourn_id, current_round=round_count)}}" method="post">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    {% set title = 'Player' if t_type == 'solo' else 'Team' %}
+                    <th>{{ title }} 1</th>
+                    <th>Results</th>
+                    <th>{{ title }} 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in pairings %}
+                <tr>
+                    <td>{{ match.table }}</td>
                 
-                {# Logic to extract the correct player regardless of solo or team #}
-                {% if t_type == 'solo' %}
-                    {% set p1 = match.p1 %}
-                    {% set p2 = match.p2 %}
-                {% else %}
-                    {% set p1 = match.t1 %}
-                    {% set p2 = match.t2 %}
-                {% endif %}
-
-                {# Render Player 1 #}
-                <td><strong>{{ p1.name }}</strong> ({{ p1.score }})</td>
-
-                <td class="text-muted">VS</td>
-
-                {# Render Player 2 (checks if it's an object or just the "BYE" string) #}
-                <td>
-                    {% if p2 is mapping %}
-                        <strong>{{ p2.name }}</strong> ({{ p2.score }})
+                    {% if t_type == 'solo' %}
+                        {% set p1 = match.p1 %}{% set p2 = match.p2 %}
                     {% else %}
-                        <em class="text-danger">{{ p2 }}</em>
+                        {% set p1 = match.t1 %}{% set p2 = match.t2 %}
                     {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
 
-            {# Separate Section for the official BYE Pair returned by your script #}
-            {% if bye_pair %}
-            <tr class="table-info">
-                <td>—</td>
-                {% set b_player = bye_pair.p1 if t_type == 'solo' else bye_pair.t1 %}
-                <td><strong>{{ b_player.name }}</strong> ({{ b_player.score }})</td>
-                <td colspan="2" class="text-center"><em>RECEIVES BYE</em></td>
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
+                    <td><strong>{{ p1.name }}</strong> ({{ p1.score }})</td>
 
-    <div class="actions no-print" style="margin-top: 20px;">
-        <button onclick="window.print()" class="btn-print">Print Pairings</button>
-        <a href="{{ url_for('view_tournament', tourn_id=tourn_id) }}" class="btn-secondary">Back to Tournament</a>
-    </div>
+                    <td>
+                        <input type="number" name="score_{{ p1.id }}" class="in" required> : 
+                        {% if p2 is mapping %}
+                            <input type="number" name="score_{{ p2.id }}" class="in" required>
+                            {# HIDDEN: Tells Python that p1 played p2 #}
+                            <input type="hidden" name="opp_{{ p1.id }}" value="{{ p2.id }}">
+                            <input type="hidden" name="opp_{{ p2.id }}" value="{{ p1.id }}">
+                        {% else %}
+                            <input type="number" value="0" class="in" readonly>
+                            <input type="hidden" name="opp_{{ p1.id }}" value="BYE">
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if p2 is mapping %}
+                            <strong>{{ p2.name }}</strong> ({{ p2.score }})
+                        {% else %}
+                            <em class="text-danger">{{ p2 }}</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                {% if bye_pair %}
+                <tr class="table-info">
+                    <td>—</td>
+                    {% set b_player = bye_pair.p1 if t_type == 'solo' else bye_pair.t1 %}
+                    <td><strong>{{ b_player.name }}</strong> ({{ b_player.score }})</td>
+                    <td>
+                        <input type="number" name="score_{{ b_player.id }}" value="{{defualt_bye}}" class="in" readonly> : 0
+                        <input type="hidden" name="opp_{{ b_player.id }}" value="BYE">
+                    </td>
+                    <td class="text-center"><em>BYE</em></td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="actions no-print" style="margin-top: 20px;">
+            <button type="button" onclick="window.print()" class="btn-print">Print Pairings</button>
+            <a href="{{ url_for('view_tournament', tourn_id=tourn_id) }}" class="btn-secondary">Back to Tournament</a>
+            <button type="submit" class="btn btn-success">Save All Results</button>
+        </div>
+    </form>
 </div>
 
 <style>
@@ -67,6 +79,8 @@
     .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     .table-info { background-color: #e7f3ff; }
     .text-center { text-align: center; }
+    .in { width: 60px; text-align: center; }
+    .btn-success { background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
 </style>
 
 {% endblock %}

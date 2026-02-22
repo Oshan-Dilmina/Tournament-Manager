@@ -12,7 +12,8 @@ class EditTeamForm(FlaskForm):
     score = IntegerField('Score', validators=[DataRequired('Team Score can not be empty '),NumberRange(-100000,+100000,'Score is not in the range')])
 
 class AddPlayerForm(FlaskForm):
-    name = StringField('Player Name', validators=[DataRequired('Player Name can not be empty ')])
+    firstname = StringField('Player Name', validators=[DataRequired('First Name can not be empty ')])
+    lastname = StringField('Player Name', validators=[DataRequired('Last Name can not be empty ')])
     score = IntegerField('Score', validators=[InputRequired('Player Score can not be empty '),NumberRange(-100000,+100000,'Score is not in the range')],default=0)
 
 class EditPlayerForm(FlaskForm):

@@ -30,9 +30,14 @@ def new_tourn_route():
         name = request.form['name']
         status = request.form['status']
         type_str = request.form['type']
+        strict = request.form['strict']
+        default_bye = request.form['bye_points']
         
+        bool_map = {"true": True, "false": False}
+        strict = bool_map.get(strict.lower())
+
         if name and status and type_str in ['solo', 'teamed']:
-            db_manager.new_tournament(name, status, type_str)
+            db_manager.new_tournament(name, status, type_str, strict, int(default_bye))
             flash(f'Tournament "{name}" created successfully!', 'success')
         else:
             flash('Invalid input for new tournament.', 'error')
@@ -82,7 +87,7 @@ def add_player_route(tourn_id):
     addplayerform = AddPlayerForm()
     if addplayerform.validate_on_submit():
         try:
-            data = {'name': addplayerform.name.data, 'score' : addplayerform.score.data, 'reg-time' : db_manager.firestore.firestore.SERVER_TIMESTAMP, 'byes' : 0, 'last_bye_round' : 0, 'op' : []}
+            data = {'name': f"{addplayerform.lastname.data},{addplayerform.firstname.data}",'firstname': addplayerform.firstname.data,'lastname': addplayerform.lastname.data, 'score' : addplayerform.score.data, 'reg-time' : db_manager.firestore.firestore.SERVER_TIMESTAMP, 'byes' : 0, 'last_bye_round' : 0, 'op' : []}
             db_manager.addplayer(tourn_id,data)
             return jsonify({'success': True})
         except Exception as e:
@@ -278,19 +283,79 @@ def standings_route(tourn_id):
 
 @app.route('/tournament/<tourn_id>/pair')
 def pairing(tourn_id):
-    round_count = db_manager.get_tournament_round_count(tourn_id) + 1
-    
-    if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
-        pairings, bye_pair = pair.SoloPair(tourn_id,round_count).pair()
-    else:
-        pairings, bye_pair = pair.TeamPair(tourn_id,round_count).pair()
+    current_round = db_manager.get_tournament_current_round(tourn_id) + 1
+    defualt_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
+
+    rounds = db_manager.get_round_info(tourn_id)
+    for round in rounds:
+        if round['ongoing'] == True:
+            current_pairings = rounds[0]
+            pairings = current_pairings['pairs']
+            bye_pair = current_pairings['bye_pair']
+            round_count = current_pairings['round_number']
+        else:
+            if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
+                pairings, bye_pair = pair.SoloPair(tourn_id,current_round).pair()
+            else:
+                pairings, bye_pair = pair.TeamPair(tourn_id,current_round).pair()
 
     return render_template('pairings.html', 
-                        pairings=pairings, 
+                        pairings=pairings,
                         bye_pair=bye_pair, 
-                        tourn_id=tourn_id,
-                        t_type = db_manager.get_tournament_by_id(tourn_id)['type'])
+                        tourn_id=tourn_id, 
+                        t_type = db_manager.get_tournament_by_id(tourn_id)['type'],
+                        tourn_name = db_manager.get_tournament_by_id(tourn_id)['name'],
+                        round_count = current_round,
+                        defualt_bye = defualt_bye)
 
+@app.route('/tournament/<tourn_id>/pair/<current_round>/submit', methods=['POST'])
+def submit_score(tourn_id, current_round):
+    tourn = db_manager.get_tournament_by_id(tourn_id)
+    col_name = 'players' if tourn['type'] == 'solo' else 'teams'
+    part_ref = db_manager.tref.document(tourn_id).collection(col_name)
+    
+    processed_ids = []
+
+    for key in request.form:
+        if key.startswith('score_'):
+            p1_id = key.replace('score_', '')
+            
+            if p1_id in processed_ids or p1_id == "BYE":
+                continue
+
+            p2_id = request.form.get(f'opp_{p1_id}')
+            s1 = int(request.form.get(f'score_{p1_id}', 0))
+
+            # Case A: Normal Match
+            if p2_id != "BYE":
+                s2 = int(request.form.get(f'score_{p2_id}', 0))
+                
+                
+                m1 = s1 - s2
+                m2 = s2 - s1
+
+                # Update Player 1
+                part_ref.document(p1_id).update({
+                    "score": db_manager.firestore.Increment(m1)
+                })
+                # Update Player 2
+                part_ref.document(p2_id).update({
+                    "score": db_manager.firestore.Increment(m2)
+                })
+                processed_ids.append(p2_id)
+
+            # Case B: BYE (The player gets a flat margin bonus)
+            else:
+                # You can use the value from the input or a tournament default
+                bye_margin = s1 
+                part_ref.document(p1_id).update({
+                    "score": db_manager.firestore.Increment(bye_margin)
+                })
+
+            processed_ids.append(p1_id)
+
+    flash(f"Round {current_round} margins applied.")
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

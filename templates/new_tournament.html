@@ -13,7 +13,41 @@
             <option value="solo">Solo</option>
             <option value="teamed">Teamed</option>
         </select><br><br>
+
+        <label for="strict">Is Swiss system strict</label><br>
+        <select id="strict" name="strict" required>
+            <option value="True">Yes</option>
+            <option value="False" selected>No</option>
+        </select><br><br>
         
+        <label><strong>Points for victory, loss, draw and no opponent (BYE)</strong></label><br>
+        
+        <input type="radio" id="classic" name="pointsys" value="classic" checked 
+               onclick="document.getElementById('manual-settings').style.display='none'" disabled>
+        <label for="classic">Classic - Win: 1, Loss: 0, Draw: 0.5, BYE: 1</label><br>
+        
+        <input type="radio" id="manual" name="pointsys" value="manual" 
+               onclick="document.getElementById('manual-settings').style.display='block'" disabled>
+        <label for="manual">Manual - Set points for each match manually</label><br>
+        
+        <div id="manual-settings" style="display: none; margin-left: 25px; margin-top: 5px; margin-bottom: 10px;">
+            <label for="bye_points">Points for BYE:</label>
+            <input type="number" id="bye_points" name="bye_points" value="1" step="0.5" style="width: 50px;">
+        </div>
+        
+        <input type="radio" id="score_based" name="pointsys" value="score_based" 
+               onclick="document.getElementById('manual-settings').style.display='none'" disabled>
+        <label for="score_based">Based on score - Winner gets 1 pt, Loser 0. (Score used as tiebreak)</label><br>
+        
+        <input type="radio" id="margin" name="pointsys" value="margin" 
+               onclick="document.getElementById('margin-settings').style.display='block'">
+        <label for="manual">Calculate using margins</label><br>
+        
+        <div id="margin-settings" style="display: none; margin-left: 25px; margin-top: 5px; margin-bottom: 10px;">
+            <label for="bye_points">Points for BYE:</label>
+            <input type="number" id="bye_points" name="bye_points" value="1" step="0.5" style="width: 50px;"><br><br>
+        </div>
+
         <button type="submit" class="button-sub">Create Tournament</button>
     </form>
 {% endblock %}

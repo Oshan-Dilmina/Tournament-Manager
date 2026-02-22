@@ -6,8 +6,13 @@
     <div id="form-errors" style="color: red; margin-bottom: 10px;"></div>
 
     <div class="form-group">
-        {{ form.name.label }}<br>
-        {{ form.name(class_="form-control", placeholder="Enter Player name", autocomplete="off") }}
+        {{ form.firstname.label }}<br>
+        {{ form.firstname(class_="form-control", placeholder="Enter first name", autocomplete="off") }}
+    </div>
+
+    <div class="form-group">
+        {{ form.lastname.label }}<br>
+        {{ form.lastname(class_="form-control", placeholder="Enter last name", autocomplete="off") }}
     </div>
 
     <div class="form-group" style="margin-top: 15px;">

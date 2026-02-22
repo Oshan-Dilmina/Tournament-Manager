@@ -17,7 +17,7 @@ try:
     tref = db.collection('tournament')
     print(" + Firebase initialized successfully in db_manager.")
 except Exception as e:
-    print(f"Error initializing Firebase: {e}")
+    print(f" + Error initializing Firebase: {e}")
     db = None
     tref = None
 
@@ -48,18 +48,26 @@ def get_tournament_by_id(tourn_id):
     # Change: return this dict so app.py doesn't break
     return {'name': "Tournament not found", 'type': 'solo'}
 
-def get_tournament_round_count(tourn_id):
+def get_tournament_current_round(tourn_id):
     if tref is None: return None
     doc = tref.document(tourn_id).get()
     if doc.exists:
         data = doc.to_dict()
 
-    return data['round_count']
+    return data['current_round']
 
-def new_tournament(name, status, type_str):
+def new_tournament(name, status, type_str, strict, default_bye):
     """Creates a new tournament document."""
     if tref is None: return
-    info = {'name': name, 'status': status, 'reg-time': firestore.firestore.SERVER_TIMESTAMP, 'type': type_str, 'round_count' : 0}
+    info = {
+        'name': name,
+        'status': status,
+        'type': type_str,
+        'strict': strict, 
+        'current_round': 0,
+        'defualt_bye' : default_bye,
+        'time_created' : firestore.firestore.SERVER_TIMESTAMP
+    }
     tref.add(info)
 
 def update_tournament(tourn_id, new_data):
@@ -195,7 +203,9 @@ def player_info(tourn_id):
     for doc in players_ref.stream():
         data = doc.to_dict()
         info.append({
-            'name': data.get('name', 'N/A Player'), # Fixed label
+            'firstname': data.get('firstname', 'N/A Player'),
+            'lastname': data.get('lastname', 'N/A Player'), # Fixed label
+            'name' : data.get('name', 'N/A Player'),
             'score': data.get('score', 0),
             'id' : doc.id
         })
@@ -221,10 +231,19 @@ def get_players_alphabetical(tourn_id):
         players.append(data)
     return sorted(players, key=lambda x: x['name'])
 
-def save_matches(tourn_id, round_number, matches):
-    round_ref = tref.document(tourn_id).collection('rounds').document(f'round_{round_number}')
-    round_ref.set({
-        'round_number': round_number,
-        'matches': matches,
-        'status': 'in_progress'
-    })
+
+def save_pairings(tourn_id, round_number, pairs, bye, ongoing):
+    round_info = {'round_number':round_number,'ongoing': ongoing,'pairs':pairs, 'bye_pair':bye}
+    tref.document(tourn_id).collection('rounds').document(f'{round_number}').set(round_info)
+    
+
+def get_round_info(tourn_id):
+    rounds_list = []
+    rounds = tref.document(tourn_id).collection('rounds')
+    for round in rounds.stream():
+        info = round.to_dict()
+        info['id'] = round.id
+        rounds_list.append(info)
+    rounds_list = sorted(rounds_list, key=lambda x:x['round_number'], reverse=True)
+    return rounds_list
+
