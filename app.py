@@ -31,7 +31,8 @@ def new_tourn_route():
         status = request.form['status']
         type_str = request.form['type']
         strict = request.form['strict']
-        default_bye = request.form['bye_points']
+        default_bye = request.form['margin_bye_points']
+        
         
         bool_map = {"true": True, "false": False}
         strict = bool_map.get(strict.lower())

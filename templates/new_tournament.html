@@ -20,9 +20,9 @@
             <option value="False" selected>No</option>
         </select><br><br>
         
-        <label><strong>Points for victory, loss, draw and no opponent (BYE)</strong></label><br>
+        <label><strong>Points for victory, loss, draw and recieving BYE</strong></label><br>
         
-        <input type="radio" id="classic" name="pointsys" value="classic" checked 
+        <input type="radio" id="classic" name="pointsys" value="classic" checked
                onclick="document.getElementById('manual-settings').style.display='none'" disabled>
         <label for="classic">Classic - Win: 1, Loss: 0, Draw: 0.5, BYE: 1</label><br>
         
@@ -31,7 +31,7 @@
         <label for="manual">Manual - Set points for each match manually</label><br>
         
         <div id="manual-settings" style="display: none; margin-left: 25px; margin-top: 5px; margin-bottom: 10px;">
-            <label for="bye_points">Points for BYE:</label>
+            <label for="manual_bye_points">Points for BYE:</label>
             <input type="number" id="bye_points" name="bye_points" value="1" step="0.5" style="width: 50px;">
         </div>
         
@@ -44,8 +44,8 @@
         <label for="manual">Calculate using margins</label><br>
         
         <div id="margin-settings" style="display: none; margin-left: 25px; margin-top: 5px; margin-bottom: 10px;">
-            <label for="bye_points">Points for BYE:</label>
-            <input type="number" id="bye_points" name="bye_points" value="1" step="0.5" style="width: 50px;"><br><br>
+            <label for="margin_bye_points">Points for BYE:</label>
+            <input type="number" id="margin_bye_points" name="margin_bye_points" value="1" step="0.5" style="width: 50px;"><br><br>
         </div>
 
         <button type="submit" class="button-sub">Create Tournament</button>

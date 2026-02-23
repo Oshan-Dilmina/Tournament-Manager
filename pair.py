@@ -82,9 +82,11 @@ class SoloPair:
                 "p2": "BYE",
                 "table": None
             }
-
+        else:
+            bye_pair = None
         
         while unpaired:
+            players_ref = db_manager.tref.document(self.tourn_id).collection('players')
             p1 = unpaired.pop(0)
             p2 = None
 
@@ -129,9 +131,9 @@ class SoloPair:
             self.tourn_id,
             {"round_count": self.current_round}
         )
-        
+        print(self.current_round)
         db_manager.save_pairings(self.tourn_id,self.current_round,pairings,bye_pair,True)
-
+        return pairings,bye_pair
 
 
 class TeamPair:
