@@ -232,8 +232,8 @@ def get_players_alphabetical(tourn_id):
     return sorted(players, key=lambda x: x['name'])
 
 
-def save_pairings(tourn_id, round_number, pairs, bye, ongoing):
-    round_info = {'round_number':round_number,'ongoing': ongoing,'pairs':pairs, 'bye_pair':bye}
+def save_pairings(tourn_id, round_number, pairs, bye, isactive):
+    round_info = {'round_number':round_number,'isactive': isactive,'pairs':pairs, 'bye_pair':bye}
     tref.document(tourn_id).collection('rounds').document(f'{round_number}').set(round_info)
     
 
@@ -243,7 +243,9 @@ def get_round_info(tourn_id):
     for round in rounds.stream():
         info = round.to_dict()
         info['id'] = round.id
+        info['round_number'] = info.get('round_number', 1)
         rounds_list.append(info)
+        
     rounds_list = sorted(rounds_list, key=lambda x:x['round_number'], reverse=True)
     return rounds_list
 

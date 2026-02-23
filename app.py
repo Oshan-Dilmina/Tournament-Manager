@@ -31,7 +31,8 @@ def new_tourn_route():
         status = request.form['status']
         type_str = request.form['type']
         strict = request.form['strict']
-        default_bye = request.form['bye_points']
+        default_bye = request.form['margin_bye_points']
+        
         
         bool_map = {"true": True, "false": False}
         strict = bool_map.get(strict.lower())
@@ -284,20 +285,23 @@ def standings_route(tourn_id):
 @app.route('/tournament/<tourn_id>/pair')
 def pairing(tourn_id):
     current_round = db_manager.get_tournament_current_round(tourn_id) + 1
-    defualt_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
-
+    default_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
     rounds = db_manager.get_round_info(tourn_id)
-    for round in rounds:
-        if round['ongoing'] == True:
-            current_pairings = rounds[0]
-            pairings = current_pairings['pairs']
-            bye_pair = current_pairings['bye_pair']
-            round_count = current_pairings['round_number']
+    
+    pairings = None
+    bye_pair = None
+    round_count = current_round
+    active_round = next((r for r in rounds if r.get('isactive') is True), None)
+
+    if active_round:
+        pairings = active_round['pairs']
+        bye_pair = active_round.get('bye_pair')
+        round_count = active_round['round_number']
+    else:
+        if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
+            pairings, bye_pair = pair.SoloPair(tourn_id, current_round).pair()
         else:
-            if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
-                pairings, bye_pair = pair.SoloPair(tourn_id,current_round).pair()
-            else:
-                pairings, bye_pair = pair.TeamPair(tourn_id,current_round).pair()
+            pairings, bye_pair = pair.TeamPair(tourn_id, current_round).pair()
 
     return render_template('pairings.html', 
                         pairings=pairings,
@@ -305,15 +309,15 @@ def pairing(tourn_id):
                         tourn_id=tourn_id, 
                         t_type = db_manager.get_tournament_by_id(tourn_id)['type'],
                         tourn_name = db_manager.get_tournament_by_id(tourn_id)['name'],
-                        round_count = current_round,
-                        defualt_bye = defualt_bye)
+                        round_count = round_count,
+                        defualt_bye = default_bye)
 
 @app.route('/tournament/<tourn_id>/pair/<current_round>/submit', methods=['POST'])
 def submit_score(tourn_id, current_round):
     tourn = db_manager.get_tournament_by_id(tourn_id)
     col_name = 'players' if tourn['type'] == 'solo' else 'teams'
     part_ref = db_manager.tref.document(tourn_id).collection(col_name)
-    
+    active_ref = db_manager.tref.document(tourn_id).collection('rounds').document(current_round)
     processed_ids = []
 
     for key in request.form:
@@ -326,7 +330,7 @@ def submit_score(tourn_id, current_round):
             p2_id = request.form.get(f'opp_{p1_id}')
             s1 = int(request.form.get(f'score_{p1_id}', 0))
 
-            # Case A: Normal Match
+
             if p2_id != "BYE":
                 s2 = int(request.form.get(f'score_{p2_id}', 0))
                 
@@ -334,7 +338,6 @@ def submit_score(tourn_id, current_round):
                 m1 = s1 - s2
                 m2 = s2 - s1
 
-                # Update Player 1
                 part_ref.document(p1_id).update({
                     "score": db_manager.firestore.Increment(m1)
                 })
@@ -344,9 +347,7 @@ def submit_score(tourn_id, current_round):
                 })
                 processed_ids.append(p2_id)
 
-            # Case B: BYE (The player gets a flat margin bonus)
             else:
-                # You can use the value from the input or a tournament default
                 bye_margin = s1 
                 part_ref.document(p1_id).update({
                     "score": db_manager.firestore.Increment(bye_margin)
@@ -355,6 +356,7 @@ def submit_score(tourn_id, current_round):
             processed_ids.append(p1_id)
 
     flash(f"Round {current_round} margins applied.")
+    active_ref.update({'isactive':False})
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
