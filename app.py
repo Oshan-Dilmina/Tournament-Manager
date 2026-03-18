@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash , jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash , jsonify, abort
 import db_manager # Import the separated database logic
 import os
 from dotenv import load_dotenv
@@ -282,9 +282,16 @@ def standings_route(tourn_id):
 
 @app.route('/tournament/<tourn_id>/pair')
 def pairing(tourn_id):
+    tournament = db_manager.get_tournament_by_id(tourn_id)
+    if tournament['type'] == 'teamed' and len(db_manager.get_teams_for_tournament(tourn_id)) < 2:
+        abort(400, description="Not enough Teams to start pairing.")
+    elif tournament['type'] == 'solo' and len(db_manager.get_players_alphabetical(tourn_id)) < 2:
+        abort(400, description="Not enough Players to start pairing.")
+    
     current_round = db_manager.get_tournament_current_round(tourn_id) + 1
-    default_bye = db_manager.get_tournament_by_id(tourn_id)['defualt_bye']
+    default_bye = tournament['defualt_bye']
     rounds = db_manager.get_round_info(tourn_id)
+    status = tournament['status']
     
     pairings = None
     bye_pair = None
@@ -296,11 +303,14 @@ def pairing(tourn_id):
         bye_pair = active_round.get('bye_pair')
         round_count = active_round['round_number']
     else:
-        if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo':
-            pairings, bye_pair = pair.SoloPair(tourn_id, current_round).pair()
-        else:
-            pairings, bye_pair = pair.TeamPair(tourn_id, current_round).pair()
 
+        if db_manager.get_tournament_by_id(tourn_id)['type'] == 'solo' and status != 'over':
+            pairings, bye_pair = pair.SoloPair(tourn_id, current_round).pair()
+        elif db_manager.get_tournament_by_id(tourn_id)['type'] == 'teamed' and status != 'over':
+            pairings, bye_pair = pair.TeamPair(tourn_id, current_round).pair()
+        else:
+            abort(400, description="Tournament is over")
+        
     return render_template('pairings.html', 
                         pairings=pairings,
                         bye_pair=bye_pair, 
@@ -356,6 +366,16 @@ def submit_score(tourn_id, current_round):
     flash(f"Round {current_round} margins applied.")
     active_ref.update({'isactive':False})
     return redirect(url_for('view_tournament', tourn_id=tourn_id))
+
+#-------------------------------------ERRORS---------------------------------------------------------------
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html',e = e), 404
+
+@app.errorhandler(400)
+def bad_request(e):
+    return render_template('400.html',e = e), 400
+
 
 if __name__ == '__main__':
     app.run(debug=True)

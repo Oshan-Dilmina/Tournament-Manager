@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 routes.txt
 .python-version
+*.code-workspace

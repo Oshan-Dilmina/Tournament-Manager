@@ -11,17 +11,9 @@ class SoloPair:
         
         _, players = db_manager.player_info(self.tourn_id)
         tourn = db_manager.get_tournament_by_id(self.tourn_id)
-
-        if tourn.get("status") == "over":
-            return "Tournament is over", 400
-
-        if len(players) < 2:
-            return "Not enough players", 400
-
-        
         for p in players:
             p.setdefault("op", [])
-            p.setdefault("byes", 0)
+            p.setdefault("byes", 0)     
             p.setdefault("last_bye_round", 0)
 
         
@@ -46,7 +38,6 @@ class SoloPair:
                 p["byes"] = newdata.get('byes',0)
                 p["last_bye_round"] = newdata.get('last_bye_round',0)
                 p["op"] = newdata.get('op',[])
-                print(p['byes'])
                 min_byes = min(p["byes"] for p in unpaired)
                 candidates = [p for p in unpaired if p["byes"] == min_byes]
 
@@ -57,7 +48,6 @@ class SoloPair:
             ]
 
             if non_consecutive:
-                print(non_consecutive)
                 candidates = non_consecutive
             
 
@@ -131,7 +121,6 @@ class SoloPair:
             self.tourn_id,
             {"round_count": self.current_round}
         )
-        print(self.current_round)
         db_manager.save_pairings(self.tourn_id,self.current_round,pairings,bye_pair,True)
         return pairings,bye_pair
 
@@ -145,13 +134,6 @@ class TeamPair:
         
         _, teams = db_manager.team_info(self.tourn_id)
         tourn = db_manager.get_tournament_by_id(self.tourn_id)
-
-        if tourn.get("status") == "over":
-            return "Tournament is over", 400
-
-        if len(teams) < 2:
-            return "Not enough teams", 400
-
         
         for t in teams:
             t.setdefault("op", [])
@@ -180,7 +162,6 @@ class TeamPair:
                 t["byes"] = newdata.get('byes',0)
                 t["last_bye_round"] = newdata.get('last_bye_round',0)
                 t["op"] = newdata.get('op',[])
-                print(t['byes'])
                 min_byes = min(t["byes"] for t in unpaired)
                 candidates = [t for t in unpaired if t["byes"] == min_byes]
 
@@ -191,7 +172,6 @@ class TeamPair:
             ]
 
             if non_consecutive:
-                print(non_consecutive)
                 candidates = non_consecutive
             
 
