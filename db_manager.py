@@ -32,6 +32,12 @@ def get_all_tournaments():
     return tlist_data
 
 def get_tournament_by_id(tourn_id):
+    """
+    Fetches a single tournament document by ID.
+
+    # Parameters:
+    tourn_id (str): The ID of the tournament to fetch.
+    """
     if tref is None: return None
     doc = tref.document(tourn_id).get()
     if doc.exists:
@@ -42,6 +48,15 @@ def get_tournament_by_id(tourn_id):
     return {'name': "Tournament not found", 'type': 'solo'}
 
 def get_tournament_current_round(tourn_id):
+    """
+    Fetches the current round of a tournament by ID.
+
+    # Parameters:
+    tourn_id (str): The ID of the tournament to fetch.
+
+    # Returns:
+    int: The current round of the tournament. Returns None if the tournament does not exist.
+    """
     if tref is None: return None
     doc = tref.document(tourn_id).get()
     if doc.exists:
@@ -50,7 +65,19 @@ def get_tournament_current_round(tourn_id):
     return data['current_round']
 
 def new_tournament(name, status, type_str, strict, default_bye):
-    """Creates a new tournament document."""
+    """
+    Creates a new tournament document in the Firestore database.
+
+    # Parameters:
+    name (str): The name of the tournament.
+    status (str): The status of the tournament (Open, Closed, etc.).
+    type_str (str): The type of tournament (solo or teamed).
+    strict (bool): Whether the Swiss system is strict for this tournament.
+    default_bye (int): The points awarded for BYE in this tournament.
+
+    # Returns:
+    None
+    """
     if tref is None: return
     info = {
         'name': name,
