@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 text-center">
+            <div class="card shadow-lg border-0 login-card">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-trophy fa-3x text-primary mb-3"></i>
+                        <h2 class="fw-bold">Tournament Manager</h2>
+                        <p class="text-muted">Sign in to access admin controls</p>
+                    </div>
+
+                    <div id="firebaseui-auth-container"></div>
+                    
+                    <div id="loader" class="mt-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-2 small">Verifying connection...</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('index') }}" class="text-decoration-none small text-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Public View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
+<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
+
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
+
+<style>
+    body { background-color: #f0f2f5; font-family: 'Roboto', sans-serif; }
+    .login-card { border-radius: 20px; transition: all 0.3s ease; }
+    .login-card:hover { transform: translateY(-5px); }
+    #loader { display: block; } /* Show initially */
+    
+    /* Customizing FirebaseUI Buttons to look cleaner */
+    .firebaseui-container { box-shadow: none !important; border: none !important; }
+    .firebaseui-idp-button { border-radius: 8px !important; }
+</style>
+{% endblock %}

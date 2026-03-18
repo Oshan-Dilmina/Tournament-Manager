@@ -64,7 +64,7 @@ def get_tournament_current_round(tourn_id):
 
     return data['current_round']
 
-def new_tournament(name, status, type_str, strict, default_bye):
+def new_tournament(name, status, type_str, strict, default_bye, creator_email):
     """
     Creates a new tournament document in the Firestore database.
 
@@ -86,7 +86,8 @@ def new_tournament(name, status, type_str, strict, default_bye):
         'strict': strict, 
         'current_round': 0,
         'defualt_bye' : default_bye,
-        'time_created' : firestore.firestore.SERVER_TIMESTAMP
+        'time_created' : firestore.firestore.SERVER_TIMESTAMP,
+        'creator_email' : creator_email
     }
     tref.add(info)
 
