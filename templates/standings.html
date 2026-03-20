@@ -1,30 +1,89 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h1>📋 Standings: {{ tourn_name }}</h1>
+<div class="container pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-list-ol me-2 text-primary"></i>Tournament Standings
+            </h2>
+            <p class="text-muted small mb-0">{{ tourn_name }} • Live Rankings</p>
+        </div>
+        <div class="actions">
+            <a href="{{ url_for('view_tournament', tourn_id=tourn_id) }}" class="btn btn-light rounded-pill px-4">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 ms-2">
+                <i class="fas fa-print me-2"></i>Print
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 overflow-hidden" style="border-radius: 15px;">
+        <div class="table-responsive">
+            {% if standings %}
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-muted small text-uppercase">
+                        <th class="ps-4 border-0" style="width: 100px;">Rank</th>
+                        <th class="border-0">Participant</th>
+                        <th class="border-0 text-end pe-4">Total Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in standings %}
+                    <tr class="{% if loop.index == 1 %}bg-gold-light{% endif %}">
+                        <td class="ps-4">
+                            {% if loop.index == 1 %}
+                                <span class="badge rounded-circle p-2 bg-warning shadow-sm" title="1st Place">
+                                    <i class="fas fa-medal text-white"></i>
+                                </span>
+                            {% elif loop.index == 2 %}
+                                <span class="badge rounded-circle p-2 bg-secondary shadow-sm" style="background-color: #adb5bd !important;" title="2nd Place">
+                                    <i class="fas fa-medal text-white"></i>
+                                </span>
+                            {% elif loop.index == 3 %}
+                                <span class="badge rounded-circle p-2 bg-danger shadow-sm" style="background-color: #cd7f32 !important;" title="3rd Place">
+                                    <i class="fas fa-medal text-white"></i>
+                                </span>
+                            {% else %}
+                                <span class="fw-bold text-muted ps-2">{{ loop.index }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ s.name }}</div>
+                            <div class="smallest text-muted">ID: {{ s.id }}</div>
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="fs-5 fw-bold text-primary">{{ s.score }}</span>
+                            <span class="text-muted small ms-1">pts</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-poll-h fa-3x text-light mb-3"></i>
+                <p class="text-muted">No scores recorded yet. Start a round to see standings!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Light gold background for the leader */
+    .bg-gold-light {
+        background-color: rgba(255, 193, 7, 0.05) !important;
+    }
     
-    {% if standings %}
-        <table border="1" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Score</th>
-                    
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in standings %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ s.name }} - {{s.id}}</td>
-                    <td>{{ s.score }}</td>
-                    
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No teams or players registered yet.</p>
-    {% endif %}
-    
+    .smallest { font-size: 0.75rem; }
+
+    @media print {
+        .btn, .actions, .text-muted { display: none !important; }
+        .card { box-shadow: none !important; border: 1px solid #eee !important; }
+        .bg-gold-light { background-color: transparent !important; }
+    }
+</style>
 {% endblock %}

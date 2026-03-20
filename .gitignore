@@ -6,3 +6,4 @@ __pycache__/
 routes.txt
 .python-version
 *.code-workspace
+.vscode/

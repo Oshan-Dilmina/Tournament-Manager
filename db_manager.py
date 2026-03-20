@@ -64,7 +64,7 @@ def get_tournament_current_round(tourn_id):
 
     return data['current_round']
 
-def new_tournament(name, status, type_str, strict, default_bye, creator_email):
+def new_tournament(name, status, type_str, strict, default_bye):
     """
     Creates a new tournament document in the Firestore database.
 
@@ -87,7 +87,6 @@ def new_tournament(name, status, type_str, strict, default_bye, creator_email):
         'current_round': 0,
         'defualt_bye' : default_bye,
         'time_created' : firestore.firestore.SERVER_TIMESTAMP,
-        'creator_email' : creator_email
     }
     tref.add(info)
 
@@ -270,3 +269,36 @@ def get_round_info(tourn_id):
     rounds_list = sorted(rounds_list, key=lambda x:x['round_number'], reverse=True)
     return rounds_list
 
+def get_admin_password(username):
+    # Reach into the 'admins' collection and find the doc named after the user
+    """
+    Retrieves the password for a given admin username.
+
+    Parameters:
+    username (str): The username of the admin to retrieve the password for.
+
+    Returns:
+    str: The password for the given admin username, or None if the user is not found.
+    """
+    admin_ref = db.collection('admins').document(username).get()
+    
+    if admin_ref.exists:
+        # Return the password field from that document
+        return admin_ref.to_dict().get('password')
+    return None
+
+def save_admin_to_db(username, hashed_password):
+    """Seeds the database with the admin from .env."""
+    db.collection('admins').document(username).set({
+        'password': hashed_password
+    })
+
+def get_all_admins():
+    """Fetches all admin usernames from the Firestore collection."""
+    admins_ref = db.collection('admins').stream()
+    # We just need the Document IDs (which are the usernames)
+    return [doc.id for doc in admins_ref]
+
+def delete_admin(username):
+    """Removes an admin from the database."""
+    db.collection('admins').document(username).delete()
