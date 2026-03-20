@@ -344,8 +344,8 @@ def submit_score(tourn_id, current_round):
             processed_ids.append(p1_id)
 
     flash(f"Round {current_round} margins applied.")
-    active_ref.update({'isactive': False})
-    return redirect(url_for('index'))
+    active_ref.update({'isactive':False})
+    return redirect(url_for('view_tournament', tourn_id=tourn_id))
 
 @app.route('/admins')
 @login_required
