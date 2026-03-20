@@ -1,53 +1,63 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container" style="margin-top: 10vh;">
     <div class="row justify-content-center">
-        <div class="col-md-5 text-center">
-            <div class="card shadow-lg border-0 login-card">
-                <div class="card-body p-5">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow-lg border-0 p-4" style="border-radius: 20px; background: #ffffff;">
+                <div class="card-body text-center">
                     <div class="mb-4">
-                        <i class="fas fa-trophy fa-3x text-primary mb-3"></i>
-                        <h2 class="fw-bold">Tournament Manager</h2>
-                        <p class="text-muted">Sign in to access admin controls</p>
-                    </div>
-
-                    <div id="firebaseui-auth-container"></div>
-                    
-                    <div id="loader" class="mt-3">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                        <div class="bg-light d-inline-block p-4 rounded-circle mb-3">
+                            <i class="fas fa-user-shield fa-3x text-primary"></i>
                         </div>
-                        <p class="text-muted mt-2 small">Verifying connection...</p>
+                        <h2 class="fw-bold text-dark">Admin Portal</h2>
+                        <p class="text-muted small">Please sign in to manage tournaments</p>
                     </div>
+                    
+                    <form action="{{ url_for('auth.login') }}" method="POST">
+                        <div class="form-floating mb-3">
+                            <input type="text" name="username" class="form-control border-0 bg-light" id="userInput" placeholder="Username" required style="border-radius: 12px;">
+                            <label for="userInput" class="text-muted">Username</label>
+                        </div>
 
+                        <div class="form-floating mb-4">
+                            <input type="password" name="password" class="form-control border-0 bg-light" id="passInput" placeholder="Password" required style="border-radius: 12px;">
+                            <label for="passInput" class="text-muted">Password</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm rounded-pill">
+                            Sign In <i class="fas fa-sign-in-alt ms-2"></i>
+                        </button>
+                    </form>
+                    
                     <div class="mt-4">
-                        <a href="{{ url_for('index') }}" class="text-decoration-none small text-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Public View
+                        <hr class="opacity-25">
+                        <a href="{{ url_for('index') }}" class="text-decoration-none small text-muted hover-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Return to Public View
                         </a>
                     </div>
                 </div>
             </div>
+            
+            <p class="text-center mt-4 text-muted smallest">
+                <i class="fas fa-lock me-1"></i> Secured by Double-Hybrid Authentication
+            </p>
         </div>
     </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
-<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
-
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
-
-
 <style>
-    body { background-color: #f0f2f5; font-family: 'Roboto', sans-serif; }
-    .login-card { border-radius: 20px; transition: all 0.3s ease; }
-    .login-card:hover { transform: translateY(-5px); }
-    #loader { display: block; } /* Show initially */
+    /* Subtle hover effect for the back link */
+    .hover-primary:hover {
+        color: #0d6efd !important;
+        transition: 0.3s;
+    }
     
-    /* Customizing FirebaseUI Buttons to look cleaner */
-    .firebaseui-container { box-shadow: none !important; border: none !important; }
-    .firebaseui-idp-button { border-radius: 8px !important; }
+    /* Ensure the background of the page stays light to match the theme */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .smallest { font-size: 0.75rem; }
 </style>
 {% endblock %}

@@ -1,38 +1,82 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h1>Tournament Manager Dashboard</h1>
-    <a href="{{ url_for('new_tourn_route') }}"><button>Create New Tournament</button></a>
-    <hr>
-    <h2>Existing Tournaments</h2>
+<div class="container pb-5">
+    <div class="text-center py-5 mb-4">
+        <h1 class="fw-bold text-dark display-5">Active Tournaments</h1>
+        <p class="text-muted fs-5">Select an event below to view live standings and match results.</p>
+    </div>
+
     {% if tournaments %}
-        <table border="1" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in tournaments %}
-                <tr>
-                    <td><a href="{{ url_for('view_tournament', tourn_id=t.id) }}">{{ t.name }} (ID: {{ t.id }})</a></td>
-                    <td>{{ t.type.capitalize() }}</td>
-                    <td>{{ t.status }}</td>
-                    <td>
-                        <a href="{{ url_for('standings_route', tourn_id=t.id) }}"><button>Standings</button></a> |
-                        <a href="{{ url_for('update_tourn_route', tourn_id=t.id) }}"><button>Update</button></a> |
-                        <form method="POST" action="{{ url_for('delete_tourn_route', tourn_id=t.id) }}" style="display:inline;">
-                            <button type="submit" class="button-dng" onclick="return confirm('Are you sure you want to delete {{ t.name }}?')"> Delete</button>
-                        </form>
-                    </td>
-                    
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row g-4">
+        {% for t in tournaments %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="mb-3">
+                        {% if t.status.lower() == 'open' %}
+                            <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm">
+                                <i class="fas fa-circle me-1 small pulse"></i> Live Now
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                {{ t.status }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <h4 class="fw-bold text-dark mb-1">{{ t.name }}</h4>
+                    <p class="text-primary small fw-bold mb-3">
+                        <i class="fas {% if t.type == 'teamed' %}fa-users{% else %}fa-user{% endif %} me-1"></i>
+                        {{ t.type.capitalize() }} Format
+                    </p>
+
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('standings_route', tourn_id=t.id) }}" class="btn btn-primary rounded-pill fw-bold">
+                                <i class="fas fa-chart-bar me-2"></i>View Standings
+                            </a>
+                            <a href="{{ url_for('view_tournament', tourn_id=t.id) }}" class="btn btn-outline-light text-muted btn-sm border-0">
+                                Details & Rounds
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p>No tournaments found. Start by creating one!</p>
+    <div class="text-center py-5">
+        <div class="bg-light d-inline-block p-5 rounded-circle mb-4">
+            <i class="fas fa-calendar-times fa-4x text-muted opacity-50"></i>
+        </div>
+        <h3 class="fw-bold">No Active Tournaments</h3>
+        <p class="text-muted">Check back later or contact the administrator for upcoming events.</p>
+    </div>
     {% endif %}
+</div>
+
+<style>
+    /* Makes the cards pop when hovered */
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
+    }
+
+    /* A subtle blinking effect for "Live Now" badges */
+    .pulse {
+        animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+</style>
 {% endblock %}

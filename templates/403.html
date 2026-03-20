@@ -1,26 +1,47 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>403 Forbidden</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* This container now matches your 404 exactly */
+    .error-container {
+        text-align: center;
+        padding: 50px 20px; /* Standardized top padding */
     }
-    h1 {
-      font-size: 36px;
-      color: #333;
+    .error-code {
+        font-size: 72px;
+        font-weight: bold;
+        color: #f39c12; /* Keeps the 403 orange color */
+        margin-top: 0;
     }
-    p {
-      font-size: 18px;
-      color: #666;
+    .error-msg {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 30px;
     }
-  </style>
-</head>
-<body>
-  <h1>403 Forbidden</h1>
-  <p>You do not have permission to access this resource.</p>
-  <p>Error: {{ e }}</p>
-</body>
-</html>
+</style>
+
+<div class="error-container">
+    <div class="error-code">{{ code }}</div>
+    <h1 class="fw-bold">Access Denied</h1>
+    <p class="error-msg">
+        You don't have the required permissions for this tournament.<br>
+        <small class="text-muted">Detail: {{ e.description if e.description else e }}</small>
+    </p>
+    
+    <div class="d-flex justify-content-center gap-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Go Back
+        </a>
+        
+        {% if not session.get('user') %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+        {% else %}
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Return Home
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
