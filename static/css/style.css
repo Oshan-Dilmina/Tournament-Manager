@@ -1,19 +1,157 @@
-button{
-    background-color: rgb(0, 0, 255);
-    color: black;
-    border-radius: 5px;
+/* --- 1. GLOBAL & CORE THEME --- */
+:root {
+    --primary-blue: #0d6efd;
+    --primary-soft: #eef4ff;
+    --error-red: #dc3545;
+    --warning-orange: #f39c12;
+    --gold: #ffc107;
+    --silver: #adb5bd;
+    --bronze: #cd7f32;
+    --bg-body: #f8f9fa;
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+body {
+    background-color: var(--bg-body);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.smallest { font-size: 0.75rem; opacity: 0.8; }
+.transition-all { transition: all 0.3s ease; }
+
+/* --- 2. NAVIGATION & LAYOUT --- */
+.navbar {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.nav-link span { font-weight: 500; font-size: 0.9rem; }
+
+.hover-primary:hover { 
+    color: var(--primary-blue) !important; 
+    transition: 0.2s; 
+}
+
+.hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
+.hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
+}
+
+/* --- 3. CARDS & TABLES --- */
+.card {
+    border-radius: 15px;
     border: none;
-    padding: 5px 5px;
-    font-size: 20px;
-    font-family: 'Roboto Slab Thin', 'Helvetica Neue', sans-serif;
-    font-weight: 900;
-
 }
 
-
-.button-dng{
-    background-color: rgb(255, 0, 0);
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.02);
 }
-.button-sub{
-    background-color: rgb(0, 225, 0);
+
+.bg-soft-primary { background-color: var(--primary-soft) !important; color: var(--primary-blue); }
+.bg-soft-danger { background-color: #fff5f5 !important; color: var(--error-red); }
+
+/* --- 4. FORM ELEMENTS & INPUTS --- */
+.form-control, .form-select {
+    border-radius: 10px !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Unified Focus State */
+.form-control:focus, .form-select:focus, .ajax-form .form-control:focus {
+    background-color: #fff !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border: 1px solid var(--primary-blue) !important;
+}
+
+/* Blue Border Active State (for containers) */
+.active-blue-border {
+    border-color: var(--primary-blue) !important;
+    border-width: 2px !important;
+}
+
+/* Floating Label UI Fixes */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    background-color: transparent !important;
+    opacity: 0.7;
+    padding-left: 1rem;
+}
+
+/* Disabled/Locked Fields */
+input:disabled, select:disabled {
+    background-color: #ffffff !important;
+    color: #6c757d !important;
+    border: 1px solid #e9ecef !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* --- 5. FLASH MESSAGES & ALERTS --- */
+.flashes { list-style: none; padding: 0; margin-bottom: 20px; }
+.success, .error, .info, .warning {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    display: block;
+    border: 1px solid transparent;
+}
+.success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+.error { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+
+/* --- 6. MODAL SYSTEM (AJAX) --- */
+#modal-container { 
+    position: fixed; inset: 0; 
+    background: rgba(0,0,0,0.5); 
+    z-index: 1050; display: none; 
+}
+#modal-content {
+    background: white; margin: 10% auto; padding: 25px; 
+    width: 90%; max-width: 500px; border-radius: 15px; 
+    position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    border: none;
+}
+
+/* --- 7. STANDINGS & RANKING COLORS --- */
+.bg-gold-light { background-color: rgba(255, 193, 7, 0.06) !important; }
+.bg-warning { background-color: var(--gold) !important; }
+.bg-secondary { background-color: var(--silver) !important; }
+.bg-danger { background-color: var(--bronze) !important; }
+
+/* --- 8. ERROR PAGE STYLING (403/404) --- */
+.error-container { text-align: center; padding: 80px 20px; }
+.error-code {
+    font-size: 80px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 15px;
+    letter-spacing: -2px;
+}
+/* Specific Color for 403 Access Denied */
+.text-orange { color: var(--warning-orange) !important; }
+/* Specific Color for 404 Not Found */
+.text-red { color: var(--error-red) !important; }
+
+.error-msg { font-size: 1.1rem; color: #6c757d; margin-bottom: 30px; }
+
+/* --- 9. ANIMATIONS --- */
+.pulse { animation: pulse-animation 2s infinite; }
+@keyframes pulse-animation {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* --- 10. PRINT OPTIMIZATION --- */
+@media print {
+    .no-print, .actions, .btn, .btn-group, .navbar, .text-muted, .dropdown-toggle { 
+        display: none !important; 
+    }
+    body { background-color: white !important; padding: 0; margin: 0; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    .container { max-width: 100%; width: 100%; margin: 0; }
+    .bg-gold-light { background-color: transparent !important; }
+    .table { width: 100% !important; border-collapse: collapse; }
+    th, td { border: 1px solid #eee !important; }
 }

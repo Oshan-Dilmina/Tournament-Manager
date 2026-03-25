@@ -1,136 +1,176 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container pb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <div>
-            <h2 class="fw-bold text-dark mb-0">
-                <i class="fas fa-swords me-2 text-primary"></i>{{ tourn_name }}
-            </h2>
-            <span class="badge bg-primary rounded-pill">Round {{ round_count }}</span>
+<div class="pdf-wrapper" id="printable-content">
+    
+    <div class="main-content-area">
+        <div class="d-none d-print-block d-pdf-block mb-4">
+            <div class="d-flex justify-content-between align-items-end border-bottom pb-3">
+                <div>
+                    <h1 class="fw-bold mb-0 text-primary">TUNAment Manager</h1>
+                    <p class="text-muted mb-0">Official pairings for {{ tourn_name }}</p>
+                </div>
+                <div class="text-end">
+                    <h3 class="fw-bold mb-0">{{ tourn_name }}</h3>
+                    <span class="badge border text-dark">Round {{ round_count }}</span>
+                </div>
+            </div>
         </div>
-        <div class="actions">
-            <button type="button" onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 me-2">
-                <i class="fas fa-print me-2"></i>Print Pairings
-            </button>
-            <a href="{{ url_for('view_tournament', tourn_id=tourn_id) }}" class="btn btn-light rounded-pill px-4">
-                <i class="fas fa-arrow-left me-2"></i>Back
-            </a>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <div>
+                <h2 class="fw-bold text-dark mb-0">
+                    <i class="fas fa-layer-group me-2 text-primary"></i>Round {{ round_count }}
+                </h2>
+                <p class="text-muted small mb-0">{{ tourn_name }} • Live Pairings</p>
+            </div>
+            <div class="actions">
+                <a href="{{ url_for('export_csv', tourn_id=tourn_id, current_round=round_count) }}" class="btn btn-outline-success rounded-pill px-4 me-2">
+                    <i class="fas fa-file-csv me-2"></i>Export CSV
+                </a>
+                <button type="button" onclick="exportToPDF()" class="btn btn-outline-danger rounded-pill px-4 me-2">
+                    <i class="fas fa-file-pdf me-2"></i>Export PDF
+                </button>
+                <button type="button" onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 me-2">
+                    <i class="fas fa-print me-2"></i>Print Score Sheet
+                </button>
+                <a href="{{ url_for('view_tournament', tourn_id=tourn_id) }}" class="btn btn-light rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 overflow-hidden mb-4" style="border-radius: 15px;">
+            <form action="{{ url_for('submit_score', tourn_id=tourn_id, current_round=round_count)}}" method="post">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr class="text-muted small text-uppercase">
+                                <th class="ps-4 border-0" style="width: 80px;">Table</th>
+                                <th class="border-0">Team 1</th>
+                                <th class="border-0 text-center" style="width: 250px;">Scores</th>
+                                <th class="border-0 text-end pe-4">Team 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in pairings %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">#{{ match.table }}</td>
+                                
+                                {% set t1 = match.t1 %}{% set t2 = match.t2 %}
+
+                                <td><div class="fw-bold text-dark">{{ t1.name }}</div></td>
+                                
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center justify-content-center no-print">
+                                        <input type="hidden" name="opp_{{ t1.id }}" value="{{ t2.id if t2 else 'BYE' }}">
+
+                                        <div class="d-flex flex-column align-items-center">
+                                            {% if record_player and t1.players %}
+                                                {% for p in t1.players %}
+                                                    <div class="input-group input-group-sm mb-1" style="width: 110px;">
+                                                        <span class="input-group-text p-1 smallest bg-white" style="font-size: 0.6rem; width: 60px; overflow: hidden;">{{ p.name }}</span>
+                                                        <input type="number" name="p_score_{{ t1.id }}_{{ p.id }}" class="form-control form-control-sm text-center" placeholder="0">
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <input type="number" name="score_{{ t1.id }}" class="form-control form-control-sm text-center border-0 bg-light rounded-3" style="width: 60px;" placeholder="0">
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <span class="mx-2 text-muted fw-bold">:</span>
+                                        
+                                        <div class="d-flex flex-column align-items-center">
+                                            {% if t2 %}
+                                                <input type="hidden" name="opp_{{ t2.id }}" value="{{ t1.id }}">
+                                                {% if record_player and t2.players %}
+                                                    {% for p in t2.players %}
+                                                        <div class="input-group input-group-sm mb-1" style="width: 110px;">
+                                                            <input type="number" name="p_score_{{ t2.id }}_{{ p.id }}" class="form-control form-control-sm text-center" placeholder="0">
+                                                            <span class="input-group-text p-1 smallest bg-white" style="font-size: 0.6rem; width: 60px; overflow: hidden;">{{ p.name }}</span>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <input type="number" name="score_{{ t2.id }}" class="form-control form-control-sm text-center border-0 bg-light rounded-3" style="width: 60px;" placeholder="0">
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-light text-muted border">BYE</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="d-none d-print-block d-pdf-block"><span class="fw-bold fs-4">:</span></div>
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <div class="fw-bold text-dark">{{ t2.name if t2 else "BYE" }}</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white border-0 p-4 text-center no-print">
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                        Finalize Round & Calculate Margins
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 overflow-hidden" style="border-radius: 15px;">
-        <div class="card-header bg-white py-3 border-0 no-print">
-            <h5 class="mb-0 fw-bold text-muted small text-uppercase">Match Pairings & Score Entry</h5>
+    <div class="footer-bottom-fixed d-none d-print-block d-pdf-block">
+        <div class="border-top pt-2 mt-4">
+            <div class="d-flex justify-content-between align-items-end">
+                <div class="footer-credits">
+                    <p class="mb-0 fw-bold small text-dark">{{ tourn_name }}</p>
+                    <p class="mb-0 smallest text-muted">Powered by <strong>TUNAment Manager</strong> • 2026</p>
+                    <p class="mb-0 smallest text-muted">https://github.com/Oshan-Dilmina/Tournament-Manager</p>
+                </div>
+                <div class="text-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ request.url_root }}tournament/{{ tourn_id }}/standings"
+                         alt="QR Code" style="width: 55px; height: 55px; opacity: 0.9;">
+                    <div class="smallest text-muted" style="font-size: 0.6rem;">Scan for current standings</div>
+                </div>
+            </div>
         </div>
-        
-        <form action="{{ url_for('submit_score', tourn_id=tourn_id, current_round=round_count)}}" method="post">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr class="text-muted small text-uppercase">
-                            <th class="ps-4 border-0">Table</th>
-                            {% set title = 'Player' if t_type == 'solo' else 'Team' %}
-                            <th class="border-0">{{ title }} 1</th>
-                            <th class="border-0 text-center">Result</th>
-                            <th class="border-0 text-end pe-4">{{ title }} 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for match in pairings %}
-                        <tr>
-                            <td class="ps-4 fw-bold text-primary">#{{ match.table }}</td>
-                        
-                            {% if t_type == 'solo' %}
-                                {% set p1 = match.p1 %}{% set p2 = match.p2 %}
-                            {% else %}
-                                {% set p1 = match.t1 %}{% set p2 = match.t2 %}
-                            {% endif %}
-
-                            <td>
-                                <div class="fw-bold text-dark">{{ p1.name }}</div>
-                                <div class="smallest text-muted">Current Score: {{ p1.score }}</div>
-                            </td>
-
-                            <td class="text-center" style="min-width: 180px;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <input type="number" name="score_{{ p1.id }}" class="form-control form-control-sm text-center fw-bold border-0 bg-light rounded-3" placeholder="0" required style="width: 60px; height: 40px; font-size: 1.1rem;">
-                                    
-                                    <span class="mx-2 fw-bold text-muted">:</span>
-
-                                    {% if p2 is mapping %}
-                                        <input type="number" name="score_{{ p2.id }}" class="form-control form-control-sm text-center fw-bold border-0 bg-light rounded-3" placeholder="0" required style="width: 60px; height: 40px; font-size: 1.1rem;">
-                                        <input type="hidden" name="opp_{{ p1.id }}" value="{{ p2.id }}">
-                                        <input type="hidden" name="opp_{{ p2.id }}" value="{{ p1.id }}">
-                                    {% else %}
-                                        <input type="number" value="0" class="form-control form-control-sm text-center border-0 bg-white" readonly style="width: 60px;">
-                                        <input type="hidden" name="opp_{{ p1.id }}" value="BYE">
-                                    {% endif %}
-                                </div>
-                            </td>
-
-                            <td class="text-end pe-4">
-                                {% if p2 is mapping %}
-                                    <div class="fw-bold text-dark">{{ p2.name }}</div>
-                                    <div class="smallest text-muted">Current Score: {{ p2.score }}</div>
-                                {% else %}
-                                    <span class="badge bg-soft-danger text-danger p-2 px-3 rounded-pill" style="background-color: #fff5f5;">
-                                        <i class="fas fa-ghost me-1"></i>{{ p2 }}
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                        {% if bye_pair %}
-                        <tr class="table-light">
-                            <td class="ps-4 text-muted"><i class="fas fa-clock"></i></td>
-                            {% set b_player = bye_pair.p1 if t_type == 'solo' else bye_pair.t1 %}
-                            <td>
-                                <div class="fw-bold text-dark">{{ b_player.name }}</div>
-                                <div class="small text-muted">Automatic Bye</div>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <input type="number" name="score_{{ b_player.id }}" value="{{defualt_bye}}" class="form-control form-control-sm text-center fw-bold border-0 bg-white" readonly style="width: 60px;">
-                                    <span class="mx-2 text-muted">:</span>
-                                    <span class="text-muted small">0</span>
-                                </div>
-                                <input type="hidden" name="opp_{{ b_player.id }}" value="BYE">
-                            </td>
-                            <td class="text-end pe-4 text-muted italic">Received BYE</td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-footer bg-white border-0 p-4 text-center no-print">
-                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">
-                    <i class="fas fa-save me-2"></i>Finalize Round & Save Scores
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
-<style>
-    /* Styling for the score inputs to make them pop */
-    .form-control:focus {
-        background-color: #fff !important;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        border: 1px solid #0d6efd !important;
-    }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function exportToPDF() {
+    const element = document.getElementById('printable-content');
+    document.body.classList.add('is-exporting');
+    const opt = {
+        margin: [0.3, 0.4, 0.3, 0.4],
+        filename: '{{ tourn_name|replace(" ", "_") }}_Round_{{ round_count }}.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save().then(() => {
+        document.body.classList.remove('is-exporting');
+    });
+}
+</script>
 
-    .smallest { font-size: 0.75rem; }
+<style>
+    .smallest { font-size: 0.7rem; line-height: 1.2; }
+    .pdf-wrapper { display: flex; flex-direction: column; min-height: 90vh; }
+    .main-content-area { flex: 1; }
+    .d-pdf-block { display: none !important; }
 
     @media print {
-        .no-print { display: none !important; }
-        .card { border: none !important; box-shadow: none !important; }
-        .table { border: 1px solid #000 !important; }
-        body { background-color: white !important; padding: 0; }
-        .container { max-width: 100%; width: 100%; margin: 0; }
-        input[type="number"] { border: 1px solid #ccc !important; }
+        .no-print, nav, .navbar { display: none !important; }
+        body { background-color: white !important; font-size: 11pt; margin: 0; }
+        .pdf-wrapper { height: 98vh; }
+        .footer-bottom-fixed { display: block !important; margin-top: auto; padding-bottom: 10px; }
+        .table td, .table th { border-top: 1px solid #eee !important; padding: 12px 8px !important; }
+        .d-print-block { display: block !important; }
     }
+
+    body.is-exporting .no-print { display: none !important; }
+    body.is-exporting .d-pdf-block { display: block !important; }
+    body.is-exporting .pdf-wrapper { height: 10.4in; } 
 </style>
 {% endblock %}

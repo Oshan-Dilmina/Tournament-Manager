@@ -1,27 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-    /* This container now matches your 404 exactly */
-    .error-container {
-        text-align: center;
-        padding: 50px 20px; /* Standardized top padding */
-    }
-    .error-code {
-        font-size: 72px;
-        font-weight: bold;
-        color: #f39c12; /* Keeps the 403 orange color */
-        margin-top: 0;
-    }
-    .error-msg {
-        font-size: 18px;
-        color: #666;
-        margin-bottom: 30px;
-    }
-</style>
+
 
 <div class="error-container">
-    <div class="error-code">{{ code }}</div>
+    <div class="error-code text-orange">{{ code }}</div>
     <h1 class="fw-bold">Access Denied</h1>
     <p class="error-msg">
         You don't have the required permissions for this tournament.<br>

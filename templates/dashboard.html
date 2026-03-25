@@ -72,7 +72,7 @@
                         <td class="text-end pe-4">
                             <div class="btn-group shadow-sm rounded-pill overflow-hidden">
                                 <a href="{{ url_for('standings_route', tourn_id=t.id) }}" class="btn btn-light btn-sm px-3" title="View Standings">
-                                    <i class="fas fa-podium text-primary"></i>
+                                    <i class="fas fa-list-ol me-2 text-primary"></i>
                                 </a>
                                 <a href="{{ url_for('update_tourn_route', tourn_id=t.id) }}" class="btn btn-light btn-sm px-3 border-start" title="Settings">
                                     <i class="fas fa-cog text-muted"></i>
@@ -103,9 +103,5 @@
     {% endif %}
 </div>
 
-<style>
-    .hover-primary:hover { color: #0d6efd !important; transition: 0.2s; }
-    .smallest { font-size: 0.7rem; }
-    .btn-group .btn:hover { background-color: #f8f9fa; }
-</style>
+
 {% endblock %}

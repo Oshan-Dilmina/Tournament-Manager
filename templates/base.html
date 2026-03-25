@@ -9,24 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <style>
-        .flashes { list-style: none; padding: 10px; }
-        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 10px; border-radius: 5px; }
-        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; }
-        
-        .nav-link span { font-weight: 500; font-size: 0.9rem; }
-        
-        #modal-container { 
-            position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.5); 
-            z-index: 1050; display: none; 
-        }
-        #modal-content {
-            background: white; margin: 10% auto; 
-            padding: 20px; width: 90%; max-width: 500px; 
-            border-radius: 12px; position: relative;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
 </head>
 <body>
 
@@ -46,7 +30,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                             <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('index') }}">All Tournaments</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admins') }}">Manage Admins</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">

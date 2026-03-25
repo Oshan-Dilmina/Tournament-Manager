@@ -7,7 +7,7 @@
             <h2 class="fw-bold text-dark">
                 <i class="fas fa-plus-circle me-2 text-primary"></i>Create New Tournament
             </h2>
-            <p class="text-muted">Fill in the details below to initialize your tournament bracket.</p>
+            <p class="text-muted">Initialize your tournament with specific pairing rules.</p>
         </div>
 
         <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -15,16 +15,17 @@
                 <form method="POST" action="{{ url_for('new_tourn_route') }}">
                     
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted">General Information</label>
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-2 d-block">General Information</label>
+                        
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control border-0 bg-light" id="name" name="name" placeholder="Tournament Name" required style="border-radius: 10px;">
                             <label for="name">Tournament Name</label>
                         </div>
                         
-                        <div class="row g-3">
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select border-0 bg-light" id="type" name="type" required style="border-radius: 10px;">
+                                    <select class="form-select border-0 bg-light" id="type" name="type" required style="border-radius: 10px;" onchange="checkTeamedStatus()">
                                         <option value="solo">Solo (1v1)</option>
                                         <option value="teamed">Teamed</option>
                                     </select>
@@ -33,54 +34,73 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select border-0 bg-light" id="strict" name="strict" required style="border-radius: 10px;">
-                                        <option value="False" selected>Standard Swiss</option>
-                                        <option value="True">Strict Swiss</option>
+                                    <select class="form-select border-0 bg-light" id="status" name="status" required style="border-radius: 10px;">
+                                        <option value="Open" selected>Open</option>
+                                        <option value="Draft">Draft</option>
+                                        <option value="Upcoming">Upcoming</option>
                                     </select>
-                                    <label for="strict">System Strictness</label>
+                                    <label for="status">Initial Status</label>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-2 d-block">Pairing Logic</label>
+                        <div class="form-floating">
+                            <select class="form-select border-0 bg-light" id="strict" name="strict" required style="border-radius: 10px;">
+                                <option value="False" selected>Non-Strict</option>
+                                <option value="True" disabled>Strict - Coming Soon</option>
+                            </select>
+                            <label for="strict">Pairing Variation</label>
+                        </div>
+                        <div class="form-text smallest text-muted mt-2 px-1">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            In the non-strict system, players will play against each other more than once if it is forced to happen.
+                        </div>
+                    </div>
+
+                    <div id="record-player-container" class="mb-4 p-3 rounded-3 border transition-all" 
+                         style="background-color: transparent; opacity: 0.5; border-color: #dee2e6;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="record_player" name="record_player" value="True" onchange="updateRecordBorder()">
+                            <label class="form-check-label fw-bold text-dark" for="record_player">
+                                <i class="fas fa-user-chart me-2 text-primary"></i>Record Player Scores
+                            </label>
+                            <p class="smallest text-muted mb-0 mt-1">
+                                Calculate individual rankings alongside team standings.
+                            </p>
                         </div>
                     </div>
 
                     <hr class="my-4 text-muted opacity-25">
 
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted d-block mb-3">Scoring & Point System</label>
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-3 d-block">Scoring & Point System</label>
                         
-                        <div class="form-check p-3 mb-2 border rounded-3 bg-light opacity-75">
-                            <input class="form-check-input ms-0 me-3" type="radio" id="classic" name="pointsys" value="classic" checked disabled>
-                            <label class="form-check-label" for="classic">
-                                <strong>Classic Scoring</strong><br>
-                                <span class="small text-muted">Win: 1 | Loss: 0 | Draw: 0.5 | BYE: 1</span>
-                            </label>
-                        </div>
-
-                        <div class="form-check p-3 mb-2 border rounded-3 bg-light opacity-75">
-                            <input class="form-check-input ms-0 me-3" type="radio" id="manual" name="pointsys" value="manual" disabled>
-                            <label class="form-check-label" for="manual">
-                                <strong>Manual Set</strong><br>
-                                <span class="small text-muted">Manually input points for every single match.</span>
-                            </label>
-                        </div>
-
-                        <div class="form-check p-3 mb-2 border rounded-3 border-primary" style="background-color: #f8fbff;">
+                        <div class="form-check p-3 mb-2 border rounded-3 transition-all active-blue-border shadow-sm" id="margin-container" style="background-color: #f8fbff;">
                             <input class="form-check-input ms-0 me-3" type="radio" id="margin" name="pointsys" value="margin" onchange="toggleMarginSettings(true)" checked>
                             <label class="form-check-label" for="margin">
                                 <strong>Margin Calculation</strong><br>
-                                <span class="small text-muted">Calculate points based on score difference.</span>
+                                <span class="small text-muted">Points derived from score differences.</span>
                             </label>
                             
                             <div id="margin-settings" class="mt-3 ps-4" style="display: block;">
                                 <div class="d-flex align-items-center">
-                                    <label for="margin_bye_points" class="small fw-bold me-3">Points for BYE:</label>
-                                    <input type="number" id="margin_bye_points" name="margin_bye_points" class="form-control form-control-sm border-0 bg-white shadow-sm" value="1" step="0.5" style="width: 80px; border-radius: 8px;">
+                                    <label for="margin_bye_points" class="smallest fw-bold me-3">Points for BYE:</label>
+                                    <input type="number" id="margin_bye_points" name="margin_bye_points" class="form-control form-control-sm border-0 bg-light shadow-sm" value="1" step="0.5" style="width: 80px; border-radius: 8px;">
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <input type="hidden" name="status" value="Open">
+                        <div class="form-check p-3 mb-2 border rounded-3 bg-light opacity-50" id="classic-container">
+                            <input class="form-check-input ms-0 me-3" type="radio" id="classic" name="pointsys" value="classic" onchange="toggleMarginSettings(false)" disabled>
+                            <label class="form-check-label" for="classic">
+                                <strong>Classic Scoring</strong><br>
+                                <span class="small text-muted">Win: 1 | Loss: 0 | Draw: 0.5</span>
+                            </label>
+                        </div>
+                    </div>
 
                     <div class="d-grid mt-5">
                         <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow-sm">
@@ -94,8 +114,64 @@
 </div>
 
 <script>
-    function toggleMarginSettings(show) {
-        document.getElementById('margin-settings').style.display = show ? 'block' : 'none';
+    // Handles the Blue Border for the "Record Player" switch
+    function updateRecordBorder() {
+        const checkbox = document.getElementById('record_player');
+        const container = document.getElementById('record-player-container');
+        const typeSelect = document.getElementById('type');
+
+        if (typeSelect.value === 'teamed') {
+            if (checkbox.checked) {
+                container.classList.add('active-blue-border', 'shadow-sm');
+            } else {
+                container.classList.remove('active-blue-border', 'shadow-sm');
+            }
+        }
     }
+
+    // Handles logic for Teamed vs Solo participants
+    function checkTeamedStatus() {
+        const typeSelect = document.getElementById('type');
+        const recordContainer = document.getElementById('record-player-container');
+        const recordCheckbox = document.getElementById('record_player');
+        
+        if (typeSelect.value === 'teamed') {
+            recordContainer.style.opacity = '1';
+            recordCheckbox.disabled = false;
+            updateRecordBorder();
+        } else {
+            recordContainer.style.opacity = '0.5';
+            recordContainer.classList.remove('active-blue-border', 'shadow-sm');
+            recordCheckbox.checked = false;
+            recordCheckbox.disabled = true;
+        }
+    }
+
+    // Handles the Blue Border for Scoring radio buttons
+    function toggleMarginSettings(isMargin) {
+        const marginContainer = document.getElementById('margin-container');
+        const classicContainer = document.getElementById('classic-container');
+        const marginSettings = document.getElementById('margin-settings');
+
+        if (isMargin) {
+            marginContainer.classList.add('active-blue-border', 'shadow-sm');
+            marginContainer.style.backgroundColor = '#f8fbff';
+            marginSettings.style.display = 'block';
+            
+            classicContainer.classList.remove('active-blue-border', 'shadow-sm');
+            classicContainer.style.backgroundColor = 'transparent';
+        } else {
+            classicContainer.classList.add('active-blue-border', 'shadow-sm');
+            classicContainer.style.backgroundColor = '#f8fbff';
+            
+            marginContainer.classList.remove('active-blue-border', 'shadow-sm');
+            marginContainer.style.backgroundColor = 'transparent';
+            marginSettings.style.display = 'none';
+        }
+    }
+
+    window.onload = checkTeamedStatus;
 </script>
+
+
 {% endblock %}

@@ -64,7 +64,7 @@ def get_tournament_current_round(tourn_id):
 
     return data['current_round']
 
-def new_tournament(name, status, type_str, strict, default_bye):
+def new_tournament(name, status, type_str, strict, default_bye, record_player):
     """
     Creates a new tournament document in the Firestore database.
 
@@ -87,6 +87,7 @@ def new_tournament(name, status, type_str, strict, default_bye):
         'current_round': 0,
         'defualt_bye' : default_bye,
         'time_created' : firestore.firestore.SERVER_TIMESTAMP,
+        'record_player' : record_player
     }
     tref.add(info)
 
@@ -302,3 +303,21 @@ def get_all_admins():
 def delete_admin(username):
     """Removes an admin from the database."""
     db.collection('admins').document(username).delete()
+
+def get_round_pairings(tourn_id, round_number):
+    if tref is None: return None
+
+    # Path: tournaments -> tourn_id -> rounds -> round_number
+    round_doc = tref.document(tourn_id).collection('rounds').document(str(round_number)).get()
+    tourn_doc = tref.document(tourn_id).get()
+
+    if round_doc.exists and tourn_doc.exists:
+        r_data = round_doc.to_dict()
+        t_data = tourn_doc.to_dict()
+        return {
+            'pairs': r_data.get('pairs', []), # As seen in your screenshot
+            'bye_pair': r_data.get('bye_pair', None),
+            'tourn_name': t_data.get('name', 'Tournament'),
+            't_type': t_data.get('type', 'solo')
+        }
+    return None

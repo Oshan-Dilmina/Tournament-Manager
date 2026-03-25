@@ -1,17 +1,146 @@
 {% extends "base.html" %}
-{% block content %}
-    <h1>✏️ Update Tournament: {{ tournament.name }}</h1>
-    <form method="POST">
-        <label for="name">Tournament Name:</label><br>
-        <input type="text" id="name" name="name" value="{{ tournament.name }}" required><br><br>
 
-        <label for="status">Status:</label><br>
-        <input type="text" id="status" name="status" value="{{ tournament.status }}" required><br><br>
-        
-        <label>Type:</label><br>
-        <input type="text" value="{{ tournament.type.capitalize() }}" disabled><br><br>
-        
-        <button type="submit" class="button-sub">Save Changes</button>
-    </form>
-    <p><a href="{{ url_for('index') }}">Cancel and go back</a></p>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="mb-4">
+            <h2 class="fw-bold text-dark">
+                <i class="fas fa-edit me-2 text-primary"></i>Update Tournament
+            </h2>
+            <p class="text-muted small">Modify settings for <strong>{{ tournament.name }}</strong>. Core rules are locked.</p>
+        </div>
+
+        <div class="card shadow-sm border-0" style="border-radius: 15px;">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    
+                    <div class="mb-4">
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-2 d-block">General Information</label>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control border-0 bg-light" id="name" name="name" 
+                                   value="{{ tournament.name }}" placeholder="Tournament Name" required style="border-radius: 10px;">
+                            <label for="name">Tournament Name</label>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control border-0 bg-white opacity-75" 
+                                           value="{{ tournament.type.capitalize() }}" disabled style="border-radius: 10px; cursor: not-allowed;">
+                                    <label>Participant Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select border-0 bg-light" id="status" name="status" required style="border-radius: 10px;">
+                                        <option value="Open" {% if tournament.status == 'Open' %}selected{% endif %}>Open</option>
+                                        <option value="Draft" {% if tournament.status == 'Draft' %}selected{% endif %}>Draft</option>
+                                        <option value="Upcoming" {% if tournament.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                                        <option value="Finished" {% if tournament.status == 'Finished' %}selected{% endif %}>Finished</option>
+                                    </select>
+                                    <label for="status">Tournament Status</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-2 d-block">Pairing Logic</label>
+                        <div class="form-floating">
+                            <select class="form-select border-0 bg-white opacity-75" disabled style="border-radius: 10px; cursor: not-allowed;">
+                                <option>{{ 'Strict' if tournament.strict else 'Non-Strict' }}</option>
+                            </select>
+                            <label>Pairing Variation</label>
+                        </div>
+                        <div class="form-text smallest text-muted mt-2 px-1">
+                            <i class="fas fa-lock me-1"></i> Pairing logic cannot be changed after initialization.
+                        </div>
+                    </div>
+
+                    {% if tournament.type == 'teamed' %}
+                    <div id="record-player-container" 
+                         class="mb-4 p-3 rounded-3 border transition-all {{ 'active-blue-border shadow-sm' if tournament.record_player else '' }}">
+                        
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="record_player" value="False">
+                            <input class="form-check-input" type="checkbox" id="record_player" name="record_player" value="True" 
+                                   {% if tournament.record_player %}checked{% endif %} onchange="updateRecordBorder()">
+                            
+                            <label class="form-check-label fw-bold text-dark" for="record_player">
+                                <i class="fas fa-user-chart me-2 text-primary"></i>Record Player Scores
+                            </label>
+                            <p class="smallest text-muted mb-0 mt-1">
+                                Calculate individual rankings alongside team standings.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label smallest fw-bold text-uppercase text-muted mb-2 d-block">Point System</label>
+                        <div class="p-3 border rounded-3 bg-white opacity-75" style="border-style: dashed !important; cursor: not-allowed;">
+                             <span class="fw-bold text-dark small">
+                                 <i class="fas fa-calculator me-2 text-muted"></i>
+                                 {{ tournament.pointsys.capitalize() if tournament.pointsys else 'Margin' }} Calculation
+                             </span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted opacity-25">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-link text-muted text-decoration-none smallest">
+                            Cancel and go back
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateRecordBorder() {
+        const checkbox = document.getElementById('record_player');
+        const container = document.getElementById('record-player-container');
+        if (checkbox && container) {
+            if (checkbox.checked) {
+                container.classList.add('active-blue-border', 'shadow-sm');
+            } else {
+                container.classList.remove('active-blue-border', 'shadow-sm');
+            }
+        }
+    }
+</script>
+
+<style>
+    .smallest { font-size: 0.75rem; }
+    .form-label { background: none !important; }
+    .transition-all { transition: all 0.3s ease; }
+    
+    /* Custom border state to avoid logic-heavy inline styles */
+    .active-blue-border {
+        border-color: #0d6efd !important;
+        border-width: 2px !important;
+    }
+
+    /* Input Header (Floating Label) Styles - No Background */
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label {
+        background-color: transparent !important;
+        opacity: 0.7;
+    }
+
+    /* Fixed Look for Disabled Fields */
+    input:disabled, select:disabled {
+        background-color: #ffffff !important;
+        color: #6c757d !important;
+        border: 1px solid #e9ecef !important;
+    }
+</style>
 {% endblock %}
